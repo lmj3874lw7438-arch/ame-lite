@@ -1,0 +1,72 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>AME — Devis urgent (Lite)</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header>
+    <img src="./assets/ame-logo.svg" alt="AME" />
+    <h1>AME — Acheminement Messagerie Express (Lite)</h1>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="panel">
+        <h2>Calculer mon devis urgent (sans serveur)</h2>
+        <form id="quote-form">
+          <div class="form-grid">
+            <label class="span3">
+              Adresse de départ
+              <input id="origin" type="text" placeholder="Ex: Grenoble" value="Grenoble" required />
+            </label>
+            <label class="span3">
+              Adresse d’arrivée
+              <input id="destination" type="text" placeholder="Ex: Lyon" value="Lyon" required />
+            </label>
+            <label class="span2">
+              Poids total (kg)
+              <input id="poids" type="text" inputmode="decimal" pattern="[0-9]*" value="20" required />
+            </label>
+            <label class="span2">
+              Manutention
+              <select id="manutention">
+                <option value="false" selected>Non</option>
+                <option value="true">Oui (+25 €)</option>
+              </select>
+            </label>
+            <label class="full">
+              Détails (optionnel)
+              <textarea id="details" placeholder="Ex: 2 colis, retrait demain 10h, accès quai..."></textarea>
+            </label>
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary" id="goBtn"><span id="goLabel">Obtenir mon devis AME</span></button>
+          </div>
+        </form>
+
+        <div id="result" class="card" style="display:none;">
+          <h3>Devis AME</h3>
+          <div class="meta" id="trajet"></div>
+          <div class="price" id="prix"></div>
+          <div class="breakdown" id="breakdown"></div>
+          <div class="total" id="total"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Carte du trajet</h2>
+        <div class="map-wrap"><div id="map"></div></div>
+        <div class="meta" id="summary"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>
