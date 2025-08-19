@@ -1,28 +1,56 @@
 
-const BACKEND_URL = 'http://localhost:4000'; // change to deployed API if needed
+// Client-only V8.2: uses Nominatim + OSRM directly from the browser (no backend).
 
-// Map
+const toast = document.getElementById('toast');
+function showToast(msg){ toast.textContent=msg; toast.style.display='block'; setTimeout(()=>toast.style.display='none', 3000); }
+
+// Map init
 const map = L.map('map', { zoomControl: false }).setView([46.6, 2.5], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 L.control.zoom({ position:'bottomright' }).addTo(map);
-let markers=[], polyline=null;
-function updateMap(a,b){ markers.forEach(m=>map.removeLayer(m)); if(polyline) map.removeLayer(polyline);
-  const m1=L.marker([a.lat,a.lon]).addTo(map).bindPopup('Départ'); const m2=L.marker([b.lat,b.lon]).addTo(map).bindPopup('Arrivée');
-  markers=[m1,m2]; polyline=L.polyline([[a.lat,a.lon],[b.lat,b.lon]], {weight:4,opacity:.85}).addTo(map);
-  map.fitBounds(polyline.getBounds(), {padding:[40,40]}); }
+let markers=[], routeLine=null;
 
-// UI
+function setMarkers(a,b){
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  const m1=L.marker([a.lat,a.lon]).addTo(map).bindPopup('Départ'); 
+  const m2=L.marker([b.lat,b.lon]).addTo(map).bindPopup('Arrivée');
+  markers=[m1,m2];
+}
+function drawRoute(coords){
+  if(routeLine){ map.removeLayer(routeLine); routeLine=null; }
+  const latlngs = coords.map(([lon,lat])=>[lat,lon]);
+  routeLine = L.polyline(latlngs, { weight:5, opacity:.95 }).addTo(map);
+  map.fitBounds(routeLine.getBounds(), { padding:[40,40] });
+}
+
+async function geocode(q){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, {headers:{'Accept':'application/json'}});
+  if(!r.ok) throw new Error('Geocoding error');
+  const d=await r.json();
+  if(!Array.isArray(d)||!d.length) throw new Error('Adresse introuvable');
+  const {lat,lon,display_name}=d[0];
+  return { lat:parseFloat(lat), lon:parseFloat(lon), label:display_name };
+}
+
+async function routeOSRM(a,b, avoid=''){
+  const params = new URLSearchParams({ overview:'full', geometries:'geojson', steps:'false', alternatives:'false' });
+  if(avoid) params.set('exclude', avoid);
+  const url = `https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?${params.toString()}`;
+  const r = await fetch(url, {headers:{'Accept':'application/json'}});
+  if(!r.ok) throw new Error('OSRM error');
+  const data = await r.json();
+  if(!data.routes || !data.routes.length) throw new Error('Aucune route trouvée');
+  const route = data.routes[0];
+  return { distanceKm: Math.round(route.distance/10)/100, durationMin: Math.round(route.duration/60), geometry: route.geometry };
+}
+
+// UI refs
 const form = document.getElementById('quote-form');
 const goBtn = document.getElementById('goBtn'); const goLabel = document.getElementById('goLabel');
+const resetBtn = document.getElementById('resetBtn');
 const result = document.getElementById('result'); const offersDiv = document.getElementById('offers');
 const chosenDiv = document.getElementById('chosen');
 const trajet = document.getElementById('trajet'); const routeMeta = document.getElementById('routeMeta'); const volMeta = document.getElementById('volMeta'); const summary = document.getElementById('summary');
-
-// Helpers
-function toRad(d){return d*Math.PI/180}
-function haversine(a,b,c,d){const R=6371,dl=toRad(c-a),dn=toRad(d-b);const x=Math.sin(dl/2)**2+Math.cos(toRad(a))*Math.cos(toRad(c))*Math.sin(dn/2)**2;return R*(2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));}
-async function geocode(q){const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`); if(!r.ok) throw new Error('Geocode'); const d=await r.json(); if(!Array.isArray(d)||!d.length) throw new Error('No addr'); const {lat,lon,display_name}=d[0]; return {lat:parseFloat(lat),lon:parseFloat(lon),label:display_name};}
-const r2=x=>Math.round(x*100)/100;
 
 const VEHICLES=[
   { id:'ev-city', label:'Citadine électrique', clientTarifKm:0.90, gasoilKm:0,    maxKg:150,  maxM3:0.5, fuel:'electric', costPerKm:0.20 },
@@ -30,9 +58,10 @@ const VEHICLES=[
   { id:'van-14m3', label:'14 m³ rallongé (Master)', clientTarifKm:1.80, gasoilKm:0.25, maxKg:1200, maxM3:14,  fuel:'diesel',   costPerKm:0.65 },
 ];
 const COSTS={ driverPerHour:25, jobFixed:5, handlingFee:25, avgSpeedKmh:60, targetMargin:0.15, minPrice:25 };
+const r2 = x=>Math.round(x*100)/100;
 const surchargePoids=(p,prix)=> p>1000?prix*.30:p>500?prix*.20:p>100?prix*.10:0;
 
-function computeLocalOffers(distanceKm, poidsKg, volumeM3, manutention){
+function computeOffers(distanceKm, poidsKg, volumeM3, manutention){
   const hours=distanceKm/COSTS.avgSpeedKmh;
   return VEHICLES.map(v=>{
     if(poidsKg&&v.maxKg&&poidsKg>v.maxKg) return null;
@@ -54,9 +83,9 @@ function computeLocalOffers(distanceKm, poidsKg, volumeM3, manutention){
   }).filter(Boolean).sort((a,b)=>a.cost.suggested-b.cost.suggested);
 }
 
-function renderOffers(data){
+function renderOffers(offers){
   offersDiv.innerHTML='';
-  data.offers.forEach((o, idx)=>{
+  offers.forEach((o, idx)=>{
     const tag=o.fuel==='electric'?'<span class="tag">Électrique</span>':'<span class="tag">Diesel</span>';
     const html=`
       <div class="offer">
@@ -73,7 +102,7 @@ function renderOffers(data){
   });
   offersDiv.querySelectorAll('button[data-idx]').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      const o=data.offers[Number(btn.dataset.idx)];
+      const o=offers[Number(btn.dataset.idx)];
       chosenDiv.style.display='block';
       chosenDiv.innerHTML=`
         <h3>Devis retenu — ${o.vehicle}</h3>
@@ -89,11 +118,10 @@ function renderOffers(data){
   });
 }
 
-function volFromDims(L,W,H){ if(!L||!W||!H) return 0; if(L<=0||W<=0||H<=0) return 0; return (L*W*H)/1_000_000; }
-
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
-  result.style.display='none'; offersDiv.innerHTML=''; chosenDiv.style.display='none'; chosenDiv.innerHTML=''; volMeta.textContent='';
+  chosenDiv.style.display='none'; chosenDiv.innerHTML='';
+  offersDiv.innerHTML=''; result.style.display='none'; volMeta.textContent='';
   const origin=document.getElementById('origin').value.trim();
   const destination=document.getElementById('destination').value.trim();
   const poids=parseFloat(document.getElementById('poids').value||'0');
@@ -102,39 +130,36 @@ form.addEventListener('submit', async (e)=>{
   const wid=parseFloat(document.getElementById('wid').value||'0');
   const hei=parseFloat(document.getElementById('hei').value||'0');
   const manut=document.getElementById('manutention').value==='true';
-  if(!origin||!destination||!poids||poids<=0){ alert('Merci de saisir une origine, une destination et un poids valide.'); return; }
-  const volDims=volFromDims(len,wid,hei);
+  const avoid=document.getElementById('avoid').value;
+  if(!origin||!destination||!poids||poids<=0){ showToast('Complète départ, arrivée et poids.'); return; }
+  const volDims=(len>0&&wid>0&&hei>0)?(len*wid*hei)/1_000_000:0;
   const volUsed=volDims>0?volDims:(volume>0?volume:0);
   if(volUsed>0) volMeta.textContent=`Volume pris en compte: ${volUsed.toFixed(3)} m³`;
 
   goBtn.disabled=true; goLabel.textContent='Calcul...';
   try{
-    const r=await fetch(`${BACKEND_URL}/quote`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({origin,destination,poidsKg:poids,volumeM3:volUsed,lengthCm:len,widthCm:wid,heightCm:hei,manutention:manut})});
-    if(!r.ok) throw new Error('API KO');
-    const data=await r.json();
-    updateMap(data.origin, data.destination);
-    summary.textContent=`Distance: ${data.route.distanceKm} km • Durée: ${data.route.durationMin} min`;
-    trajet.textContent=`${data.origin.label.split(',')[0]} → ${data.destination.label.split(',')[0]}`;
-    routeMeta.textContent=`Offres trouvées: ${data.offers.length}`;
-    if(data.inputs?.volumeM3>0) volMeta.textContent=`Volume pris en compte: ${Number(data.inputs.volumeM3).toFixed(3)} m³`;
+    const [o,d]=await Promise.all([geocode(origin),geocode(destination)]);
+    setMarkers(o,d);
+    const rt = await routeOSRM(o,d,avoid);
+    drawRoute(rt.geometry.coordinates);
+    summary.textContent = `Distance: ${rt.distanceKm} km • Durée: ${rt.durationMin} min`;
+    trajet.textContent = `${o.label.split(',')[0]} → ${d.label.split(',')[0]}`;
+    routeMeta.textContent = `Itinéraire: ${avoid===''?'Standard':(avoid==='motorway'?'Sans autoroutes':'Sans ferries')}`;
+    const offers=computeOffers(rt.distanceKm, poids, volUsed, manut);
     result.style.display='block';
-    renderOffers(data);
-  }catch{
-    try{
-      const [o,d]=await Promise.all([geocode(origin),geocode(destination)]);
-      updateMap(o,d);
-      const dist=r2(haversine(o.lat,o.lon,d.lat,d.lon));
-      summary.textContent=`Distance (local): ${dist} km`;
-      trajet.textContent=`${o.label.split(',')[0]} → ${d.label.split(',')[0]}`;
-      routeMeta.textContent=`Mode local (API indisponible)`;
-      if(volUsed>0) volMeta.textContent=`Volume pris en compte: ${volUsed.toFixed(3)} m³`;
-      const offers=computeLocalOffers(dist, poids, volUsed, manut);
-      result.style.display='block';
-      renderOffers({offers});
-    }catch(e2){
-      alert('Impossible de calculer le devis pour le moment.'); console.error(e2);
-    }
+    renderOffers(offers);
+  }catch(err){
+    console.error(err);
+    showToast('Routage indisponible, réessaie.');
   }finally{
     goBtn.disabled=false; goLabel.textContent='Obtenir les offres';
   }
+});
+
+resetBtn.addEventListener('click', ()=>{
+  document.getElementById('quote-form').reset();
+  offersDiv.innerHTML=''; chosenDiv.style.display='none'; result.style.display='none'; summary.textContent='';
+  if(routeLine){ map.removeLayer(routeLine); routeLine=null; }
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  map.setView([46.6, 2.5], 6);
 });

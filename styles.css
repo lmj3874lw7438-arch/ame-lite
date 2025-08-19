@@ -26,3 +26,4 @@ button.primary{background:linear-gradient(90deg,var(--a),var(--b),var(--c));colo
 #map{height:100%} .meta{color:var(--muted);font-size:14px}
 .detailCard{background:#0f1728;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
 .price{font-weight:900;font-size:20px;background:linear-gradient(90deg,var(--a),var(--c));-webkit-background-clip:text;color:transparent}
+.toast{position:fixed;top:16px;right:16px;background:#102033;border:1px solid #1b2f4a;color:#cfe9ff;padding:10px 12px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:999}

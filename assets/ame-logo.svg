@@ -1,9 +1,19 @@
 
-<svg width="320" height="90" viewBox="0 0 320 90" xmlns="http://www.w3.org/2000/svg">
-  <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0%" stop-color="#00E5FF"/><stop offset="50%" stop-color="#7C4DFF"/><stop offset="100%" stop-color="#00FFA3"/></linearGradient></defs>
-  <rect width="100%" height="100%" rx="14" fill="#0b1220"/>
+<svg width="220" height="64" viewBox="0 0 320 90" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="50%" stop-color="#7C4DFF"/>
+      <stop offset="100%" stop-color="#00FFA3"/>
+    </linearGradient>
+    <filter id="s" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" rx="16" fill="#0b1220"/>
   <g transform="translate(16,22)">
-    <text x="2" y="42" font-family="Poppins,Segoe UI,Roboto,Arial" font-weight="900" font-size="44" fill="url(#g)">AME</text>
+    <text x="2" y="42" font-family="Poppins,Segoe UI,Roboto,Arial" font-weight="900" font-size="44" fill="url(#g)" filter="url(#s)">AME</text>
     <text x="130" y="30" font-family="Inter,Segoe UI,Roboto,Arial" font-weight="700" font-size="13" fill="#b9c6dc">Acheminement</text>
     <text x="130" y="50" font-family="Inter,Segoe UI,Roboto,Arial" font-weight="700" font-size="13" fill="#b9c6dc">Messagerie Express</text>
   </g>

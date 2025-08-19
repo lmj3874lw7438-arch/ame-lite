@@ -4,13 +4,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>AME — Devis (V7 PERF)</title>
+  <title>AME — Devis (V8.2 Direct)</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
   <header>
-    <img src="../assets/ame-logo.svg" alt="AME" />
+    <img src="./assets/ame-logo.svg" alt="AME" />
     <h1>AME — Acheminement Messagerie Express</h1>
   </header>
 
@@ -55,6 +55,14 @@
               Hauteur (cm)
               <input id="hei" type="number" min="0" step="1" value="0" />
             </label>
+            <label class="span2">
+              Itinéraire
+              <select id="avoid">
+                <option value="">Standard</option>
+                <option value="motorway">Éviter autoroutes</option>
+                <option value="ferry">Éviter ferries</option>
+              </select>
+            </label>
             <label class="full">
               Détails (optionnel)
               <textarea id="details" placeholder="Ex: 1 palette, quai, horaires..."></textarea>
@@ -62,6 +70,7 @@
           </div>
           <div class="actions">
             <button type="submit" class="primary" id="goBtn"><span id="goLabel">Obtenir les offres</span></button>
+            <button type="button" id="resetBtn">Réinitialiser</button>
           </div>
         </form>
 
@@ -81,6 +90,8 @@
       </div>
     </div>
   </div>
+
+  <div id="toast" class="toast" style="display:none;"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./app.js"></script>
