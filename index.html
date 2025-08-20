@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>AME — Devis (V8.2 Direct)</title>
+  <title>AME — Devis Premium (V9)</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
@@ -28,6 +28,7 @@
               Adresse d’arrivée
               <input id="destination" type="text" placeholder="Ex: Lyon" value="Lyon" required />
             </label>
+
             <label class="span2">
               Poids total (kg)
               <input id="poids" type="number" min="1" step="1" value="20" required />
@@ -43,6 +44,7 @@
                 <option value="true">Oui (+25 €)</option>
               </select>
             </label>
+
             <label class="span2">
               Longueur (cm)
               <input id="len" type="number" min="0" step="1" value="0" />
@@ -55,6 +57,7 @@
               Hauteur (cm)
               <input id="hei" type="number" min="0" step="1" value="0" />
             </label>
+
             <label class="span2">
               Itinéraire
               <select id="avoid">
@@ -63,35 +66,74 @@
                 <option value="ferry">Éviter ferries</option>
               </select>
             </label>
+
+            <div class="span3">
+              <label class="small">Prix gasoil</label>
+              <div class="row">
+                <label style="display:flex;align-items:center;gap:8px;">
+                  <input type="radio" name="fuelMode" id="fuelAuto" value="auto" checked />
+                  <span>Auto (FR moyen)</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;">
+                  <input type="radio" name="fuelMode" id="fuelManual" value="manual" />
+                  <span>Manuel</span>
+                </label>
+              </div>
+              <div class="row" style="margin-top:6px; gap:12px;">
+                <label class="span2" style="flex:1;">
+                  Diesel (€/L)
+                  <input id="dieselPrice" type="number" step="0.01" min="0" value="1.85" />
+                </label>
+                <button type="button" id="refreshFuel" class="btn-ghost">Mettre à jour</button>
+              </div>
+              <div class="small" id="fuelMeta"></div>
+            </div>
+
+            <label class="span2">
+              Conso Trafic (L/100)
+              <input id="consoTrafic" type="number" step="0.1" min="0" value="8.5" />
+            </label>
+            <label class="span2">
+              Conso 14 m³ (L/100)
+              <input id="conso14" type="number" step="0.1" min="0" value="11.5" />
+            </label>
+
             <label class="full">
               Détails (optionnel)
               <textarea id="details" placeholder="Ex: 1 palette, quai, horaires..."></textarea>
             </label>
           </div>
+
           <div class="actions">
-            <button type="submit" class="primary" id="goBtn"><span id="goLabel">Obtenir les offres</span></button>
-            <button type="button" id="resetBtn">Réinitialiser</button>
+            <button type="submit" class="primary" id="goBtn">🚀 Obtenir les offres</button>
+            <button type="button" id="resetBtn" class="btn-ghost">Réinitialiser</button>
           </div>
         </form>
 
-        <div id="result" class="detailCard" style="display:none;">
+        <div id="result" class="detailCard hidden">
           <div class="meta" id="trajet"></div>
           <div class="meta" id="routeMeta"></div>
           <div class="meta" id="volMeta"></div>
           <div id="offers"></div>
-          <div id="chosen" class="detailCard" style="display:none;"></div>
+          <div id="chosen" class="detailCard hidden"></div>
         </div>
+
+        <div id="toast" class="toast hidden"></div>
       </div>
 
       <div class="panel">
         <h2>Carte du trajet</h2>
         <div class="map-wrap"><div id="map"></div></div>
         <div class="meta" id="summary"></div>
+
+        <div class="actions" id="navActions" style="margin-top:10px; display:none;">
+          <a id="navWaze" class="primary" href="#" target="_blank" rel="noopener">Ouvrir Waze</a>
+          <a id="navGmaps" class="primary" href="#" target="_blank" rel="noopener">Google Maps</a>
+          <a id="navApple" class="primary" href="#" target="_blank" rel="noopener">Apple Plans</a>
+        </div>
       </div>
     </div>
   </div>
-
-  <div id="toast" class="toast" style="display:none;"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./app.js"></script>
