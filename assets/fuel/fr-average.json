@@ -1,7 +1,6 @@
 {
   "country": "FR",
   "fuel": "diesel",
-  "eur_per_liter": 1.85,
-  "source": "static fallback",
-  "updated": "2025-08-01"
+  "price_eur_per_liter": 1.85,
+  "updated_at": "2025-08-01"
 }
