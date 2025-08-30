@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AME — Tournée optimisée</title>
+  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+  <header>
+    <a href="./index.html"><img src="./assets/ame-logo.svg" alt="AME"/></a>
+    <h1>AME — Outil Tournée</h1>
+    <nav class="nav">
+      <a href="./index.html">Devis</a>
+      <a href="./optimize.html" class="active">Tournée</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="panel">
+        <h2>Étapes</h2>
+        <form id="tour-form">
+          <div class="form-grid">
+            <label class="span3">Départ
+              <input id="origin" type="text" placeholder="Ex: Grenoble" list="dl-origin" required/>
+              <datalist id="dl-origin"></datalist>
+            </label>
+            <label class="span3">Arrivée (laisser vide pour boucle)
+              <input id="destination" type="text" placeholder="Ex: Lyon" list="dl-dest"/>
+              <datalist id="dl-dest"></datalist>
+            </label>
+            <div id="stages" class="full"></div>
+            <div class="full actions">
+              <button type="button" class="add" id="addStage">➕ Ajouter une étape</button>
+            </div>
+            <label class="span2">Itinéraire
+              <select id="avoid"><option value="">Standard</option><option value="motorway">Éviter autoroutes</option><option value="ferry">Éviter ferries</option></select>
+            </label>
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary" id="optimizeBtn"><span id="optLabel">🚀 Optimiser la tournée</span></button>
+            <button type="button" id="resetBtn">Réinitialiser</button>
+          </div>
+        </form>
+        <div class="card">
+          <div class="stat">
+            <span id="statOrder">Ordre: -</span>
+            <span id="statDist">Distance: -</span>
+            <span id="statDur">Durée: -</span>
+          </div>
+          <div class="actions navActions" id="navActions" style="display:none;margin-top:10px;">
+            <a id="navGmaps" href="#" target="_blank" rel="noopener">Google Maps</a>
+            <a id="navApple" href="#" target="_blank" rel="noopener">Apple Plans</a>
+            <a id="navWaze" href="#" target="_blank" rel="noopener">Waze</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Carte</h2>
+        <div class="map-wrap"><div id="map"></div></div>
+        <div class="meta" id="summary"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./optimize.js"></script>
+</body>
+</html>

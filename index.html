@@ -1,127 +1,95 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>AME — V9.1 Multi-Étapes</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AME — Devis</title>
+  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
   <header>
-    <img src="./assets/ame-logo.svg" alt="AME" />
-    <h1>AME — Acheminement Messagerie Express</h1>
+    <a href="./index.html"><img src="./assets/ame-logo.svg" alt="AME"/></a>
+    <h1>AME — Devis Express</h1>
+    <nav class="nav">
+      <a href="./index.html" class="active">Devis</a>
+      <a href="./optimize.html">Tournée</a>
+    </nav>
   </header>
+
   <div class="container">
     <div class="grid">
       <div class="panel">
-        <h2>Calculer mon devis (multi-étapes)</h2>
+        <h2>Calculer mon devis</h2>
         <form id="quote-form">
           <div class="form-grid">
-            <label class="span3">
-              Adresse de départ
-              <input id="origin" type="text" placeholder="Ex: Grenoble" value="Grenoble" required />
+            <label class="span3">Départ
+              <input id="origin" type="text" placeholder="Ex: Grenoble" list="dl-origin" required/>
+              <datalist id="dl-origin"></datalist>
             </label>
-            <div class="full" id="stepsBlock">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <label>Étapes intermédiaires</label>
-                <button type="button" id="addStep" class="secondary">➕ Ajouter une étape</button>
-              </div>
-              <div id="steps"></div>
-            </div>
-            <label class="span3">
-              Adresse d’arrivée
-              <input id="destination" type="text" placeholder="Ex: Lyon" value="Lyon" required />
+            <label class="span3">Arrivée
+              <input id="destination" type="text" placeholder="Ex: Lyon" list="dl-dest" required/>
+              <datalist id="dl-dest"></datalist>
             </label>
-            <label class="span2">
-              Poids total (kg)
-              <input id="poids" type="number" min="1" step="1" value="20" required />
+            <label class="span2">Poids (kg)
+              <input id="poids" type="number" min="1" step="1" value="20" required/>
             </label>
-            <label class="span2">
-              Volume direct (m³, option)
-              <input id="volume" type="number" min="0" step="0.01" value="0" />
+            <label class="span2">Volume direct (m³, option)
+              <input id="volume" type="number" min="0" step="0.01" value="0"/>
             </label>
-            <label class="span2">
-              Manutention
-              <select id="manutention">
-                <option value="false" selected>Non</option>
-                <option value="true">Oui (+25 €)</option>
-              </select>
+            <label class="span2">Manutention
+              <select id="manutention"><option value="false" selected>Non</option><option value="true">Oui (+25 €)</option></select>
             </label>
-            <label class="span2">
-              Longueur (cm)
-              <input id="len" type="number" min="0" step="1" value="0" />
+            <label class="span2">Longueur (cm)
+              <input id="len" type="number" min="0" step="1" value="0"/>
             </label>
-            <label class="span2">
-              Largeur (cm)
-              <input id="wid" type="number" min="0" step="1" value="0" />
+            <label class="span2">Largeur (cm)
+              <input id="wid" type="number" min="0" step="1" value="0"/>
             </label>
-            <label class="span2">
-              Hauteur (cm)
-              <input id="hei" type="number" min="0" step="1" value="0" />
+            <label class="span2">Hauteur (cm)
+              <input id="hei" type="number" min="0" step="1" value="0"/>
             </label>
-            <label class="span2">
-              Itinéraire
-              <select id="avoid">
-                <option value="">Standard</option>
-                <option value="motorway">Éviter autoroutes</option>
-                <option value="ferry">Éviter ferries</option>
-              </select>
+            <label class="span2">Itinéraire
+              <select id="avoid"><option value="">Standard</option><option value="motorway">Éviter autoroutes</option><option value="ferry">Éviter ferries</option></select>
             </label>
-            <div class="span3 detailCard">
-              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                <strong>Carburant</strong>
-                <label class="small"><input type="radio" name="fuelMode" value="auto" checked> Auto (FR moyen)</label>
-                <label class="small"><input type="radio" name="fuelMode" value="manual"> Manuel</label>
-              </div>
-              <div class="form-grid" style="margin-top:6px">
-                <label class="span2">
-                  Diesel (€/L)
-                  <input id="dieselPrice" type="number" step="0.01" min="0" value="1.85" />
-                </label>
-                <label class="span2">
-                  Conso Trafic (L/100)
-                  <input id="consoTrafic" type="number" step="0.1" min="0" value="8.5" />
-                </label>
-                <label class="span2">
-                  Conso 14 m³ (L/100)
-                  <input id="conso14" type="number" step="0.1" min="0" value="11.5" />
-                </label>
-              </div>
-              <div class="small" id="fuelInfo" style="margin-top:6px;color:#9be8ff"></div>
-            </div>
-            <label class="full">
-              Détails (optionnel)
-              <textarea id="details" placeholder="Ex: 1 palette, quai, horaires..."></textarea>
+            <label class="span2">Diesel (€/L)
+              <input id="dieselPrice" type="number" step="0.01" min="0" value="1.85"/>
+            </label>
+            <label class="span2">Conso Trafic (L/100)
+              <input id="consoTrafic" type="number" step="0.1" min="0" value="8.5"/>
+            </label>
+            <label class="span2">Conso 14 m³ (L/100)
+              <input id="conso14" type="number" step="0.1" min="0" value="11.5"/>
             </label>
           </div>
           <div class="actions">
-            <button type="submit" class="primary" id="goBtn">🚀 Obtenir les offres</button>
-            <button type="button" class="secondary" id="resetBtn">Réinitialiser</button>
+            <button type="submit" class="primary" id="goBtn"><span id="goLabel">Obtenir les offres</span></button>
+            <button type="button" id="resetBtn">Réinitialiser</button>
           </div>
         </form>
-        <div id="result" class="detailCard" style="display:none;">
+
+        <div id="result" class="card" style="display:none;">
           <div class="meta" id="trajet"></div>
           <div class="meta" id="routeMeta"></div>
           <div class="meta" id="volMeta"></div>
           <div id="offers"></div>
-          <div id="chosen" class="detailCard" style="display:none;"></div>
+          <div id="chosen" class="card" style="display:none;"></div>
+          <div class="actions navActions" id="navActions" style="display:none;margin-top:10px;">
+            <a id="navGmaps" href="#" target="_blank" rel="noopener">Google Maps</a>
+            <a id="navApple" href="#" target="_blank" rel="noopener">Apple Plans</a>
+            <a id="navWaze" href="#" target="_blank" rel="noopener">Waze</a>
+          </div>
         </div>
       </div>
+
       <div class="panel">
         <h2>Carte du trajet</h2>
         <div class="map-wrap"><div id="map"></div></div>
         <div class="meta" id="summary"></div>
-        <div class="actions nav-links" id="navActions" style="margin-top:10px; display:none;">
-          <a id="navWaze" class="primary" href="#" target="_blank" rel="noopener">Ouvrir dans Waze</a>
-          <a id="navGmaps" class="primary" href="#" target="_blank" rel="noopener">Google Maps</a>
-          <a id="navApple" class="primary" href="#" target="_blank" rel="noopener">Apple Plans</a>
-        </div>
-        <div class="small" id="navNote" style="display:none;margin-top:6px;">Note: Waze ne supporte pas les multi-étapes en un seul lien ; on ouvre vers la destination finale.</div>
       </div>
     </div>
   </div>
+
   <div class="toast" id="toast"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./app.js"></script>
