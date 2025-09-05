@@ -6,6 +6,13 @@
   <title>AME — Devis</title>
   <link rel="stylesheet" href="./styles.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+
 </head>
 <body>
   <header>
@@ -14,6 +21,7 @@
     <nav class="nav">
       <a href="./index.html" class="active">Devis</a>
       <a href="./optimize.html">Tournée</a>
+      <button id="btnSettings" class="primary settings" style="min-height:38px;padding:8px 12px;">⚙️ Réglages</button>
     </nav>
   </header>
 
@@ -31,6 +39,12 @@
               <input id="destination" type="text" placeholder="Ex: Lyon" list="dl-dest" required/>
               <datalist id="dl-dest"></datalist>
             </label>
+
+            <div id="stages" class="full"></div>
+            <div class="full actions">
+              <button type="button" class="add" id="addStage">➕ Ajouter une étape</button>
+            </div>
+
             <label class="span2">Poids (kg)
               <input id="poids" type="number" min="1" step="1" value="20" required/>
             </label>
@@ -49,9 +63,17 @@
             <label class="span2">Hauteur (cm)
               <input id="hei" type="number" min="0" step="1" value="0"/>
             </label>
+
             <label class="span2">Itinéraire
               <select id="avoid"><option value="">Standard</option><option value="motorway">Éviter autoroutes</option><option value="ferry">Éviter ferries</option></select>
             </label>
+            <label class="span2">Poids lourd (PL)
+              <select id="truck"><option value="false" selected>Non</option><option value="true">Oui (ORS)</option></select>
+            </label>
+            <label class="span2">Matières dangereuses
+              <select id="hazmat"><option value="false" selected>Non</option><option value="true">Oui (ORS)</option></select>
+            </label>
+
             <label class="span2">Diesel (€/L)
               <input id="dieselPrice" type="number" step="0.01" min="0" value="1.85"/>
             </label>
@@ -68,6 +90,8 @@
           </div>
         </form>
 
+        <div class="help">Pour les itinéraires <b>Poids lourd / ADR</b>, ajoute une clé gratuite <b>OpenRouteService</b> dans <i>Réglages</i>. Sans clé, on utilise le profil voiture (OSRM).</div>
+
         <div id="result" class="card" style="display:none;">
           <div class="meta" id="trajet"></div>
           <div class="meta" id="routeMeta"></div>
@@ -83,15 +107,33 @@
       </div>
 
       <div class="panel">
-        <h2>Carte du trajet</h2>
+        <h2>Carte du trajet <span class="badge">Plan / Satellite</span></h2>
         <div class="map-wrap"><div id="map"></div></div>
+        <div class="layernote">Bascule en Satellite via le sélecteur. Boutons ⛶ plein écran et 📍 position.</div>
         <div class="meta" id="summary"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal Réglages -->
+  <div class="modal" id="modalSettings" style="display:none;">
+    <div class="box">
+      <h3>Réglages API</h3>
+      <div class="row">
+        <input type="password" id="orsKey" placeholder="Clé OpenRouteService (pour itinéraires PL/ADR)"/>
+        <button class="primary" id="saveSettings">Enregistrer</button>
+      </div>
+      <div class="help">Obtiens une clé gratuite sur openrouteservice.org (profil <b>driving-hgv</b>). La clé est stockée localement.</div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./app.js"></script>
+  
+  <script>
+    if('serviceWorker' in navigator){ window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+  </script>
+
 </body>
 </html>
