@@ -79,7 +79,7 @@
       <div class="panel">
         <h2>Carte <span class="badge">Plan / Satellite</span></h2>
         <div class="map-wrap"><div id="map"></div></div>
-        <div class="layernote">Profil <b>PL/ADR</b> via OpenRouteService si une clé est renseignée, sinon fallback OSRM (voiture).</div>
+        <div class="layernote">Profil <b>PL/ADR</b> via OpenRouteService si clé renseignée, sinon fallback OSRM (voiture).</div>
         <div class="meta" id="summary"></div>
       </div>
     </div>
@@ -98,7 +98,7 @@
 
   <div class="toast" id="toast"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="./optimize.js"></script>
+  <script src="./optimize.js?v=9.4.1"></script>
   
   <script>
     if('serviceWorker' in navigator){ window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }

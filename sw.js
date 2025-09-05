@@ -1,5 +1,5 @@
 
-const CACHE = 'ame-pwa-v3-reg';
+const CACHE = 'ame-pwa-v4'; // force update
 const SHELL = ['./','./index.html','./optimize.html','./styles.css','./app.js','./optimize.js','./assets/ame-logo.svg','./assets/icon-192.png','./assets/icon-512.png','./manifest.webmanifest','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
